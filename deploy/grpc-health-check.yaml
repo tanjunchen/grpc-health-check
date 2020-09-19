@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tanjunchen-grpc-health-check
+  labels:
+    app: tanjunchen-grpc-health-check
+spec:
+  selector:
+    matchLabels:
+      app: tanjunchen-grpc-health-check
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tanjunchen-grpc-health-check
+    spec:
+      containers:
+        - image: tanjunchen/grpc-health-check:1.0
+          imagePullPolicy: IfNotPresent
+          name: tanjunchen-grpc-health-check
+          ports:
+            - containerPort: 8989
+          readinessProbe:
+            exec:
+              command: ["/grpc_health_probe", "-addr=:8989"]
+            initialDelaySeconds: 3
+          livenessProbe:
+            exec:
+              command: ["/grpc_health_probe", "-addr=:8989"]
+            initialDelaySeconds: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tanjunchen-grpc-health-check
+spec:
+  selector:
+    app: tanjunchen-grpc-health-check
+  ports:
+    - name: http
+      port: 8989
+      nodePort: 30380
+  type: NodePort
