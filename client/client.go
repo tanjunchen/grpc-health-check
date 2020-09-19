@@ -44,7 +44,7 @@ func main() {
 	opts = append(opts, grpc.WithPerRPCCredentials(new(customCredential)))
 
 	// 指定客户端 interceptor
-	opts = append(opts, grpc.WithUnaryInterceptor(interceptor))
+	// opts = append(opts, grpc.WithUnaryInterceptor(interceptor))
 
 	conn, err := grpc.Dial(serverAddr, opts...)
 

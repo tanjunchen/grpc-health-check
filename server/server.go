@@ -4,7 +4,6 @@ import (
 	"net"
 
 	"github.com/sirupsen/logrus"
-	"github.com/tanjunchen/grpc-health/middleware"
 	"github.com/tanjunchen/grpc-health/router"
 	"github.com/tanjunchen/grpc-health/server/healthcheck"
 	"google.golang.org/grpc"
@@ -25,7 +24,7 @@ func main() {
 		logrus.Fatalf("Error while starting the listening service %v", err.Error())
 	}
 	var opts []grpc.ServerOption
-	opts = append(opts, grpc.UnaryInterceptor(middleware.Interceptor))
+	// opts = append(opts, grpc.UnaryInterceptor(middleware.Interceptor))
 	grpcServer := grpc.NewServer(opts...)
 
 	router.Init(grpcServer)
