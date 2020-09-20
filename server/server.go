@@ -26,14 +26,10 @@ func main() {
 	var opts []grpc.ServerOption
 	// opts = append(opts, grpc.UnaryInterceptor(middleware.Interceptor))
 	grpcServer := grpc.NewServer(opts...)
-
 	router.Init(grpcServer)
-
 	reflection.Register(grpcServer)
-
 	healthService := healthcheck.NewHealthChecker()
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthService)
-
 	logrus.Infof("Server starting to listen on %s", serverAdr)
 	if err = grpcServer.Serve(listenAddr); err != nil {
 		logrus.Fatalf("Error while starting the gRPC server on the %s listen address %v", listenAddr, err.Error())

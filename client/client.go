@@ -35,29 +35,22 @@ func interceptor(ctx context.Context, method string, req, reply interface{}, cc 
 }
 
 func main() {
-	//serverAddr := "10.20.11.116:30380"
+	// serverAddr := "10.20.11.116:30380"
 	serverAddr := ":8989"
 	var opts []grpc.DialOption
-
 	opts = append(opts, grpc.WithInsecure())
-
 	opts = append(opts, grpc.WithPerRPCCredentials(new(customCredential)))
-
 	// 指定客户端 interceptor
 	// opts = append(opts, grpc.WithUnaryInterceptor(interceptor))
-
 	conn, err := grpc.Dial(serverAddr, opts...)
-
 	if err != nil {
 		logrus.Fatalf("Couldn't dial server at %s", serverAddr)
 	}
 	defer conn.Close()
 	helloClient := proto.NewHelloServiceClient(conn)
-
 	stream, err := helloClient.Hello(context.Background(), &proto.HelloRequest{
 		Hello: "World",
 	})
-
 	for {
 		streamData, err := stream.Recv()
 		if err == io.EOF {
@@ -68,6 +61,5 @@ func main() {
 		}
 		logrus.Println(streamData)
 	}
-
 	logrus.Println("Doing a health check on the server")
 }
