@@ -36,19 +36,28 @@ func interceptor(ctx context.Context, method string, req, reply interface{}, cc 
 
 func main() {
 	// serverAddr := "10.20.11.116:30380"
-	serverAddr := ":8989"
+	serverAddr := "0.0.0.0:8989"
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithPerRPCCredentials(new(customCredential)))
+
 	// 指定客户端 interceptor
-	// opts = append(opts, grpc.WithUnaryInterceptor(interceptor))
+	opts = append(opts, grpc.WithUnaryInterceptor(interceptor))
+
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		logrus.Fatalf("Couldn't dial server at %s", serverAddr)
 	}
 	defer conn.Close()
+
+	WatchService(conn)
+
+	logrus.Println("Doing a health check on the server")
+}
+
+func Hello(conn *grpc.ClientConn) {
 	helloClient := proto.NewHelloServiceClient(conn)
-	stream, err := helloClient.Hello(context.Background(), &proto.HelloRequest{
+	stream, _ := helloClient.Hello(context.Background(), &proto.HelloRequest{
 		Hello: "World",
 	})
 	for {
@@ -61,5 +70,25 @@ func main() {
 		}
 		logrus.Println(streamData)
 	}
-	logrus.Println("Doing a health check on the server")
+}
+
+func WatchService(conn *grpc.ClientConn) {
+	client := proto.NewServiceServiceClient(conn)
+	stream, _ := client.SyncServiceWatchListService(context.TODO())
+	for {
+		// 接收从 服务端返回的数据流
+		response, err := stream.Recv()
+		if err != nil {
+			fmt.Println("接收数据出错:", err)
+			break
+		}
+
+		if response != nil {
+			// 没有错误的情况下，打印来自服务端的消息
+			fmt.Printf("[客户端收到]: %s \n", response)
+		} else {
+			fmt.Printf("[客户端收到]: %s \n", response)
+			break
+		}
+	}
 }
